@@ -1,103 +1,70 @@
-// "use client";
-//
-// import Link from "next/link";
-// import Container from "../ui/Container";
-//
-// export default function Header() {
-//     return (
-//         <header className="fixed top-0 inset-x-0 z-40">
-//             <Container className="flex items-center justify-between py-6">
-//                 <Link href="/" className="font-serif text-warm text-xl tracking-wide">
-//                     Mia <span className="text-rose-gold">Law</span>
-//                 </Link>
-//                 <nav className="hidden md:flex items-center gap-8 text-sm uppercase tracking-[0.2em] text-muted">
-//                     <Link href="/books" className="hover:text-rose-gold transition-colors">
-//                         Книги
-//                     </Link>
-//                     <Link href="/library" className="hover:text-rose-gold transition-colors">
-//                         Библиотека
-//                     </Link>
-//                     <Link href="/account" className="hover:text-rose-gold transition-colors">
-//                         Кабинет
-//                     </Link>
-//                     <Link
-//                         href="/login"
-//                         className="px-5 py-2 rounded-full border border-gold/40 text-warm hover:border-rose-gold hover:text-rose-gold transition-all"
-//                     >
-//                         Войти
-//                     </Link>
-//                 </nav>
-//             </Container>
-//         </header>
-//     );
-// }
 "use client";
 
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { Container } from "@/app/components/ui/Container";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 const links = [
-    { href: "/books", label: "Книги" },
+    { href: "/", label: "Главная" },
     { href: "/library", label: "Библиотека" },
-    { href: "/login", label: "Войти" },
 ];
 
 export function Header() {
-    const [open, setOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            setLoading(false);
+        };
+        getUser();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            setUser(session?.user || null);
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
 
     return (
-        <header className="fixed top-0 inset-x-0 z-40 backdrop-blur-md bg-[#0B0B0F]/50 border-b border-[#556B2F]/20">
-            <Container className="flex items-center justify-between h-20">
-                <Link
-                    href="/"
-                    className="font-serif text-xl tracking-[0.2em] text-warmText hover:text-gold transition-colors"
-                >
-                    MIA&nbsp;LAW
-                </Link>
-
-                <nav className="hidden md:flex gap-10">
-                    {links.map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="text-sm uppercase tracking-widest text-muted hover:text-dustyRose transition-colors"
-                        >
-                            {link.label}
-                        </Link>
-                    ))}
-                </nav>
-
-                <button
-                    onClick={() => setOpen(!open)}
-                    className="md:hidden text-warmText"
-                    aria-label="Меню"
-                >
-                    ☰
-                </button>
-            </Container>
-
-            {open && (
-                <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="md:hidden bg-[#12121A] border-t border-[#556B2F]/20"
-                >
-                    <div className="flex flex-col p-6 gap-4">
+        <header className="bg-white border-b border-slate-200">
+            <Container>
+                <div className="flex items-center justify-between py-4">
+                    <Link href="/" className="text-2xl font-bold text-blue-600">
+                        MiaLaw
+                    </Link>
+                    <nav className="hidden md:flex gap-6">
                         {links.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                onClick={() => setOpen(false)}
-                                className="text-warmText text-lg font-serif"
+                                className="text-slate-700 hover:text-blue-600 transition"
                             >
                                 {link.label}
                             </Link>
                         ))}
+                    </nav>
+                    <div className="flex gap-2">
+                        {loading ? (
+                            <div className="w-8 h-8 bg-slate-200 rounded animate-pulse" />
+                        ) : user ? (
+                            <Link href="/profile" className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded">
+                                Профиль
+                            </Link>
+                        ) : (
+                            <Link href="/login" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                Вход
+                            </Link>
+                        )}
                     </div>
-                </motion.div>
-            )}
+                </div>
+            </Container>
         </header>
     );
 }

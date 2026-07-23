@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Container } from "@/components/ui/Container";
-import { H2, Eyebrow } from "@/components/ui/Typography";
-import { galleryPrompts } from "@/shared/lib/imagePrompts";
+import { Container } from "@/app/components/ui/Container";
+import { H2, Eyebrow } from "@/app/components/ui/Typography";
+import { galleryPrompts } from "@/lib/imagePrompts";
 
 export function Gallery() {
     const [active, setActive] = useState<number | null>(null);

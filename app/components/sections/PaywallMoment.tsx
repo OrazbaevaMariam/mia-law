@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/Button";
-import { SmokeLayer } from "@/components/ui/SmokeLayer";
+import { Button } from "@/app/components/ui/Button";
+import { SmokeLayer } from "@/app/components/ui/SmokeLayer";
 import { useRouter } from "next/navigation";
 
 export function PaywallMoment({

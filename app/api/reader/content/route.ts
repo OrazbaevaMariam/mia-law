@@ -1,6 +1,6 @@
 // app/api/reader/content/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/shared/lib/supabaseServer'
+import { createServerSupabase } from '@/lib/supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Проверка подписки

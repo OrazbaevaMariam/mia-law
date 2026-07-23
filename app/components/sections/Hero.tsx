@@ -1,23 +1,19 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+import { useState } from "react";
 
-export default function Hero() {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    setIsVisible(true)
-  }, [])
+export function Hero() {
+  const [isVisible] = useState(true);
 
   return (
-    <section className="h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="max-w-2xl text-center px-4">
         <div
           className={`transition-all duration-1000 transform ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight text-white">
             Миры без границ
           </h1>
           <p className="text-xl md:text-2xl text-slate-300 mb-8 leading-relaxed">

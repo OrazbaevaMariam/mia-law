@@ -58,7 +58,7 @@
 // }
 // /api/reader/log-progress/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/shared/lib/supabaseServer'
+import { createServerSupabase } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
     const supabase = await createServerSupabase()

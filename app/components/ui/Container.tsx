@@ -1,4 +1,4 @@
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { HTMLAttributes } from "react";
 
 export function Container({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

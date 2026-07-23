@@ -1,7 +1,7 @@
 // app/admin/page.tsx
-import { createServerSupabase } from '@/shared/lib/supabaseServer'
+import { createServerSupabase } from '@/lib/supabase'
 import { redirect } from 'next/navigation'
-import { AdminDashboard } from '@/components/admin/AdminDashboard'
+import { AdminDashboard } from '@/app/components/admin/AdminDashboard'
 
 export default async function AdminPage() {
     const supabase = await createServerSupabase()

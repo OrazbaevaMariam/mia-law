@@ -1,9 +1,9 @@
 "use client";
 
-import { GlowCard } from "@/components/ui/GlowCard";
-import { Container } from "@/components/ui/Container";
-import { H2, Eyebrow } from "@/components/ui/Typography";
-import { OrnamentDivider } from "@/components/ui/Ornaments";
+import { GlowCard } from "@/app/components/ui/GlowCard";
+import { Container } from "@/app/components/ui/Container";
+import { H2, Eyebrow } from "@/app/components/ui/Typography";
+import { OrnamentDivider } from "@/app/components/ui/Ornaments";
 
 const tags = [
     { label: "Запретная любовь", value: 92 },

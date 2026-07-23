@@ -21,8 +21,8 @@
 //         </footer>
 //     );
 // }
-import { Container } from "@/components/ui/Container";
-import { OrnamentDivider } from "@/components/ui/Ornaments";
+import { Container } from "@/app/components/ui/Container";
+import { OrnamentDivider } from "@/app/components/ui/Ornaments";
 
 export function Footer() {
     return (

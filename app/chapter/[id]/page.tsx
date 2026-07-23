@@ -1,4 +1,4 @@
-import { createServerSupabase } from '@/lib/supabaseServer'
+import { createServerSupabase } from '@/lib/supabase'
 
 export default async function ChapterPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

@@ -1,5 +1,5 @@
-import { createServerSupabase } from "@/shared/lib/supabaseServer";
-import { PaywallMoment } from "@/components/sections/PaywallMoment";
+import { createServerSupabase } from "@/lib/supabase";
+import { PaywallMoment } from "@/app/components/sections/PaywallMoment";
 
 export async function SubscriptionGuard({
                                             bookSlug,

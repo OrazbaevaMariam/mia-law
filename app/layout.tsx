@@ -1,6 +1,22 @@
-// app/layout.tsx
 import type { Metadata } from 'next'
+import { Cinzel, Lora } from 'next/font/google'
 import './globals.css'
+import { Header } from '@/app/components/layout/Header'
+import { Footer } from '@/app/components/layout/Footer'
+
+const cinzel = Cinzel({
+    subsets: ['cyrillic'],
+    display: 'swap',
+    variable: '--font-cinzel',
+    weight: ['400', '600', '700'],
+})
+
+const lora = Lora({
+    subsets: ['cyrillic'],
+    display: 'swap',
+    variable: '--font-lora',
+    weight: ['400', '500', '600'],
+})
 
 export const metadata: Metadata = {
     title: 'Mia Law - Библиотека историй',
@@ -8,21 +24,17 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({
-                                       children,
-                                   }: {
+    children,
+}: {
     children: React.ReactNode
 }) {
     return (
-        <html lang="ru">
-        <head>
-            <link
-                href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:wght@400;500;600&display=swap"
-                rel="stylesheet"
-            />
-        </head>
-        <body>
-        {children}
-        </body>
+        <html lang="ru" className={`${cinzel.variable} ${lora.variable}`}>
+            <body className="bg-dark">
+                <Header />
+                {children}
+                <Footer />
+            </body>
         </html>
     )
 }

@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { GlowCard } from "@/components/ui/GlowCard";
-import { H2, Eyebrow } from "@/components/ui/Typography";
-import { Container } from "@/components/ui/Container";
-import { books } from "@/shared/lib/booksData";
+import { GlowCard } from "@/app/components/ui/GlowCard";
+import { H2, Eyebrow } from "@/app/components/ui/Typography";
+import { Container } from "@/app/components/ui/Container";
+import { books } from "@/lib/booksData";
 
 export function Books() {
     return (
