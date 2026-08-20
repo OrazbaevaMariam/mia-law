@@ -1,29 +1,24 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase";
-import { ReaderHeader } from "@/app/components/layout/ReaderHeader";
+import { createServerSupabase } from "@/lib/supabase-server";
 import { Footer } from "@/app/components/layout/Footer";
 
 export default async function ProtectedLayout({
-    children,
-}: {
+                                                  children,
+                                              }: {
     children: ReactNode;
 }) {
     const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
+    if (!user) {
         redirect("/login");
     }
 
     return (
-        <div className="min-h-screen bg-[#0F0F12] flex flex-col">
-            <ReaderHeader />
-            <main className="flex-1">{children}</main>
+        <>
+            <main>{children}</main>
             <Footer />
-        </div>
+        </>
     );
 }

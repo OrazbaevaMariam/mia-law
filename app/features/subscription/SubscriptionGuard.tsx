@@ -1,14 +1,14 @@
-import { createServerSupabase } from "@/lib/supabase";
+import { createServerSupabase } from "@/lib/supabase-server";
 import { PaywallMoment } from "@/app/components/sections/PaywallMoment";
 
 export async function SubscriptionGuard({
-                                            bookSlug,
-                                            children,
-                                        }: {
+    bookSlug,
+    children,
+}: {
     bookSlug?: string;
     children: React.ReactNode;
 }) {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     const {
         data: { session },
     } = await supabase.auth.getSession();

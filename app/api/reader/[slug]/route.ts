@@ -1,47 +1,32 @@
-import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase";
+import { NextResponse, NextRequest } from "next/server";
+import { createServerSupabase } from "@/lib/supabase-server";
 
-interface RouteParams {
-    params: {
-        slug: string;
-    };
-}
-
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ slug: string }> }
+) {
     try {
-        const { slug } = params;
+        const { slug } = await params;
         const supabase = await createServerSupabase();
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         const { data: book, error } = await supabase
             .from("books")
-            .select(`
-                id,
-                title,
-                slug,
-                description,
-                cover_url,
-                chapters (
-                    id,
-                    title,
-                    number
-                )
-            `)
-            .eq("slug", slug)
-            .eq("published", true)
+            .select("*")
+            .eq("id", slug)
             .single();
 
-        if (error || !book) {
-            return NextResponse.json(
-                { error: "Book not found" },
-                { status: 404 }
-            );
-        }
+        if (error) throw error;
 
         return NextResponse.json(book);
     } catch (error) {
-        console.error("Error fetching book:", error);
+        console.error(error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Failed to fetch book" },
             { status: 500 }
         );
     }

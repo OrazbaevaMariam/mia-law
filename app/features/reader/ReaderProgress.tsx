@@ -19,6 +19,7 @@ export function ReaderProgress({ chapterId, slug }: ReaderProgressProps) {
                     body: JSON.stringify({
                         chapterId,
                         bookSlug: slug,
+                        percent: 100, // временно, пока нет расчёта реального % прочитанного
                     }),
                 });
             } catch (error) {

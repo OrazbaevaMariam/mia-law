@@ -1,34 +1,55 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
-import { createServerSupabase } from "@/lib/supabase";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2024-06-20",
+});
 
-export async function POST() {
-    const supabase = await createServerSupabase();
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
+interface CheckoutRequest {
+    userId: string;
+    bookId: string;
+    amount: number; // в минимальных единицах валюты, например центы
+    currency: string; // "usd", "eur" и т.д.
+    bookTitle: string;
+}
 
-    if (!session) {
-        return NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_SITE_URL));
-    }
+export async function POST(request: NextRequest) {
+    try {
+        const { userId, bookId, amount, currency, bookTitle } =
+            (await request.json()) as CheckoutRequest;
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        customer_email: session.user.email!,
-        line_items: [
-            {
-                price: process.env.STRIPE_PRICE_ID!,
-                quantity: 1,
+        if (!userId || !bookId || !amount || !currency) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mia-law.ru";
+
+        const session = await stripe.checkout.sessions.create({
+            mode: "payment",
+            payment_method_types: ["card"],
+            line_items: [
+                {
+                    price_data: {
+                        currency,
+                        product_data: {
+                            name: bookTitle,
+                        },
+                        unit_amount: amount,
+                    },
+                    quantity: 1,
+                },
+            ],
+            metadata: {
+                userId,
+                bookId,
             },
-        ],
-        success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/library?success=1`,
-        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/books?canceled=1`,
-        metadata: {
-            user_id: session.user.id,
-        },
-    });
+            success_url: `${baseUrl}/library?payment=success`,
+            cancel_url: `${baseUrl}/library?payment=cancelled`,
+        });
 
-    return NextResponse.redirect(checkoutSession.url!);
+        return NextResponse.json({ success: true, checkoutUrl: session.url });
+    } catch (err) {
+        console.error("Stripe checkout error:", err);
+        return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
+    }
 }

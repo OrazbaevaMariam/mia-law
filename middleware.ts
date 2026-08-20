@@ -2,9 +2,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const ADMIN_USER_ID = '55fa94a6-c767-4e51-913f-4ebbad67a5c6' // ← ВСТАВЬ СВОЙ ID
-
 export async function middleware(request: NextRequest) {
+    // API routes must not be redirected by the admin-page middleware.
+    // Their handlers perform their own authentication and return the appropriate API status.
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+        return NextResponse.next()
+    }
+
     if (!request.nextUrl.pathname.startsWith('/admin')) {
         return NextResponse.next()
     }
@@ -38,10 +42,33 @@ export async function middleware(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user || user.id !== ADMIN_USER_ID) {
+    console.log('🔐 MIDDLEWARE - User:', user?.id, user?.email)
+
+    if (!user) {
+        return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    const { data: userRow, error } = await supabase
+        .from('users')
+        .select('role, status')
+        .eq('id', user.id)
+        .single()
+
+    console.log('🔐 MIDDLEWARE - userRow:', userRow)
+    console.log('🔐 MIDDLEWARE - error:', error)
+    console.log('🔐 MIDDLEWARE - role:', userRow?.role)
+
+    if (!userRow || userRow.role !== 'admin') {
+        console.log('❌ NOT ADMIN - redirecting to /')
         return NextResponse.redirect(new URL('/', request.url))
     }
 
+    if (userRow.status === 'banned' || userRow.status === 'suspended') {
+        console.log('❌ BANNED/SUSPENDED - redirecting to /')
+        return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    console.log('✅ ADMIN ACCESS GRANTED')
     return response
 }
 

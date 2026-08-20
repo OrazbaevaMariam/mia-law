@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Literata:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=PT+Serif:wght@400;700&display=swap');
+
+@layer base {
+  /* === ПЕРЕМЕННЫЕ CSS === */
+  :root {
+    --ink: #171914;
+    --deep-olive: #292B20;
+    --archive-olive: #666647;
+    --stone: #4B4B35;
+
+    --parchment: #EEE6D5;
+    --parchment-deep: #D8CCB7;
+    --ivory: #F4EDDF;
+
+    --burgundy: #6F2632;
+    --deep-wine: #3D1B22;
+    --rose: #9A4350;
+
+    --antique-gold: #A88749;
+    --soft-gold: #C2A767;
+    --bronze: #755B35;
+
+    --reader-text: #302A24;
+    --reader-muted: #756B60;
+
+    --dark-text: #DDD4C4;
+    --dark-muted: #9C9488;
+  }
+
+  /* === БАЗОВЫЕ СТИЛИ === */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-parchment text-reader-text font-reader;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+  }
+
+  /* ... остальной код остаётся без изменений ... */
+
+  /* === ТИПОГРАФИКА === */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold text-ink;
+  }
+
+  h1 {
+    @apply text-h1;
+  }
+
+  h2 {
+    @apply text-h2;
+  }
+
+  h3 {
+    @apply text-h3;
+  }
+
+  p {
+    @apply text-reader-base leading-reader;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  /* === ЧИТАЛКА === */
+  .reader {
+    @apply bg-parchment text-reader-text;
+  }
+
+  .reader-content {
+  user-select: none;
+    @apply font-reader text-reader-base leading-reader;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .reader-dark {
+    @apply bg-stone text-dark-text;
+  }
+
+  .reader-black {
+    @apply bg-ink text-dark-text;
+  }
+
+  /* === ФОКУС И ДОСТУПНОСТЬ === */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-antique-gold;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* === КОНТЕЙНЕРЫ === */
+  .container-wide {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-reader {
+    @apply max-w-reader mx-auto px-4 sm:px-8;
+  }
+
+  /* === КНОПКИ === */
+  .btn-primary {
+    @apply font-interface font-semibold text-ui-sm uppercase
+    px-6 py-3
+    bg-burgundy text-ivory
+    hover:bg-deep-wine
+    transition-colors duration-200
+    tracking-archive
+    cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply font-interface font-semibold text-ui-sm uppercase
+    px-6 py-3
+    border border-burgundy text-burgundy
+    hover:bg-burgundy hover:text-ivory
+    transition-all duration-200
+    tracking-archive
+    cursor-pointer;
+  }
+
+  .btn-gold {
+    @apply font-interface font-semibold text-ui-sm
+    px-6 py-3
+    bg-soft-gold text-ink
+    hover:bg-antique-gold
+    transition-colors duration-200
+    tracking-archive
+    cursor-pointer;
+  }
+
+  /* === ЗОЛОТОЙ СВЕТ === */
+  .glow-gold {
+    box-shadow: 0 0 30px rgba(194, 167, 103, 0.3);
+  }
+
+  .glow-gold-strong {
+    box-shadow: 0 0 40px rgba(194, 167, 103, 0.5);
+  }
+
+  /* === РАЗДЕЛИТЕЛИ === */
+  .divider-gold {
+    @apply h-px bg-gradient-to-r from-transparent via-soft-gold to-transparent;
+  }
+
+  .divider-rose {
+    @apply h-px bg-gradient-to-r from-transparent via-rose to-transparent;
+  }
+
+  /* === АРХИВНЫЕ ЛЕЙБЛЫ === */
+  .archive-label {
+    @apply font-interface text-ui-sm uppercase
+    text-archive-olive
+    tracking-archive
+    opacity-75;
+  }
+}
+
+/* === SCROLLBAR СТИЛЬ === */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--parchment);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--archive-olive);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stone);
+}

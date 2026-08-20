@@ -1,103 +1,66 @@
-// import { NextRequest, NextResponse } from "next/server"
-// import { createClient } from "@supabase/supabase-js"
-//
-// const supabaseAdmin = createClient(
-//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//     process.env.SUPABASE_SERVICE_ROLE_KEY!
-// )
-//
-// interface ReadingLog {
-//     user_id: string
-//     book_id: string
-//     chapter_id: string
-//     progress: number
-//     timestamp: string
-// }
-//
-// export async function POST(req: NextRequest) {
-//     try {
-//         const body: ReadingLog = await req.json()
-//         const { user_id, book_id, chapter_id, progress } = body
-//
-//         const userIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
-//
-//         // Логируем или обновляем прогресс
-//         const { error } = await supabaseAdmin
-//             .from("reading_logs")
-//             .upsert(
-//                 {
-//                     user_id,
-//                     book_id,
-//                     chapter_id,
-//                     progress,
-//                     last_read: new Date().toISOString(),
-//                     user_ip: userIp,
-//                 },
-//                 {
-//                     onConflict: "user_id,book_id,chapter_id",
-//                 }
-//             )
-//
-//         if (error) {
-//             console.error("Error logging reading progress:", error)
-//             return NextResponse.json(
-//                 { error: "Failed to log progress" },
-//                 { status: 500 }
-//             )
-//         }
-//
-//         return NextResponse.json({ success: true })
-//
-//     } catch (error) {
-//         console.error("Error in log-progress:", error)
-//         return NextResponse.json(
-//             { error: "Internal server error" },
-//             { status: 500 }
-//         )
-//     }
-// }
-// /api/reader/log-progress/route.ts
+// app/api/reader/log-progress/route.ts
+import { createServerSupabase } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase'
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
+  try {
     const supabase = await createServerSupabase()
 
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { chapter_id, progress } = body
+    const { chapterId, bookSlug, percent } = await request.json()
 
-    if (!chapter_id) {
-        return NextResponse.json(
-            { error: 'Missing chapter_id' },
-            { status: 400 }
-        )
+    if (!chapterId || !bookSlug) {
+      return NextResponse.json({ error: 'Missing chapterId or bookSlug' }, { status: 400 })
     }
 
-    try {
-        await supabase.from('reading_logs').upsert(
+    // получаем реальный id книги по slug
+    const { data: book, error: bookError } = await supabase
+        .from('books')
+        .select('id')
+        .eq('slug', bookSlug)
+        .single()
+
+    if (bookError || !book) {
+      return NextResponse.json({ error: 'Book not found' }, { status: 404 })
+    }
+
+    const { data, error } = await supabase
+        .from('reading_progress')
+        .upsert(
             {
-                user_id: user.id,
-                chapter_id,
-                progress: Math.min(progress, 100),
-                last_read: new Date().toISOString(),
+              user_id: user.id,
+              book_id: book.id,
+              chapter_id: chapterId,
+              percent: percent ?? 0,
+              updated_at: new Date().toISOString(),
             },
-            {
-                onConflict: 'user_id,chapter_id',
-            }
+            { onConflict: 'user_id,book_id' }
         )
 
-        return NextResponse.json({ success: true })
-    } catch (error) {
-        console.error('Error logging progress:', error)
-        return NextResponse.json(
-            { error: 'Failed to log progress' },
-            { status: 500 }
-        )
-    }
+    if (error) throw error
+
+    return NextResponse.json({ success: true, data })
+  } catch (error: any) {
+      let errorMessage = 'Unknown error';
+
+      if (error?.message) {
+          errorMessage = error.message;
+      } else if (error?.code) {
+          errorMessage = `${error.code}: ${error.details || error.hint || ''}`;
+      } else if (typeof error === 'string') {
+          errorMessage = error;
+      }
+
+      console.error('log-progress error:', errorMessage);
+      console.error('Full error object:', error);
+
+      return NextResponse.json({
+          error: 'Failed to log progress',
+          details: errorMessage
+      }, { status: 500 })
+  }
 }

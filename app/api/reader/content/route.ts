@@ -1,76 +1,25 @@
-// app/api/reader/content/route.ts
+import { createServerSupabase } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Проверка подписки
-const checkAccess = async (
-    supabase: SupabaseClient,
-    userId: string
-): Promise<boolean> => {
-    const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status, plan')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .single()
-
-    return !!subscription
-}
-
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  try {
     const supabase = await createServerSupabase()
+    const bookId = request.nextUrl.searchParams.get('bookId')
 
-    // 1. Проверка авторизации
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return NextResponse.json(
-            { error: 'Unauthorized' },
-            { status: 401 }
-        )
+    if (!bookId) {
+      return NextResponse.json({ error: 'Book ID required' }, { status: 400 })
     }
 
-    // 2. Проверка подписки
-    const hasAccess = await checkAccess(supabase, user.id)
+    const { data: book, error } = await supabase
+      .from('books')
+      .select('*')
+      .eq('id', bookId)
+      .single()
 
-    if (!hasAccess) {
-        return NextResponse.json(
-            { error: 'No active subscription' },
-            { status: 403 }
-        )
-    }
+    if (error) throw error
 
-    // 3. Получить параметры
-    const chapterId = req.nextUrl.searchParams.get('chapter_id')
-    const offset = parseInt(req.nextUrl.searchParams.get('offset') || '0')
-
-    if (!chapterId) {
-        return NextResponse.json(
-            { error: 'Missing chapter_id' },
-            { status: 400 }
-        )
-    }
-
-    // 4. Загрузить главу
-    const { data: chapter, error } = await supabase
-        .from('chapters')
-        .select('content')
-        .eq('id', chapterId)
-        .single()
-
-    if (error || !chapter) {
-        return NextResponse.json(
-            { error: 'Chapter not found' },
-            { status: 404 }
-        )
-    }
-
-    // 5. Вернуть только часть (chunk)
-    const chunk = chapter.content.slice(offset, offset + 3000)
-
-    return NextResponse.json({
-        chunk,
-        hasMore: offset + 3000 < chapter.content.length,
-    })
+    return NextResponse.json(book)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch content' }, { status: 500 })
+  }
 }
