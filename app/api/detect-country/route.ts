@@ -1,8 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
+import { detectCurrencyByCountry } from "@/lib/currency";
 
 export async function GET(request: NextRequest) {
-    // Vercel добавляет этот заголовок автоматически на проде
     const country = request.headers.get("x-vercel-ip-country") || "RU";
+    const currency = detectCurrencyByCountry(country);
 
-    return NextResponse.json({ country });
+    return NextResponse.json({ country, currency });
 }

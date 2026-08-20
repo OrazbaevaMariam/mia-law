@@ -73,10 +73,10 @@ export async function GET(request: NextRequest) {
         // 6️⃣ КОНВЕРСИЯ: просмотры → покупки/подписка
         const { data: viewUsers } = await supabase
             .from('chapter_views')
-            .select('distinct user_id')
+            .select('user_id')
             .gte('viewed_at', startDate.toISOString());
 
-        const viewUserIds = viewUsers?.map(u => u.user_id) || [];
+        const viewUserIds = [...new Set(viewUsers?.map(u => u.user_id) || [])];
 
         const { count: convertedCount } = await supabase
             .from('purchases')

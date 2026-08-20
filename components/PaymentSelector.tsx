@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getPriceForCurrency, detectCurrencyByCountry, SupportedCurrency } from "@/lib/currency";
 
 interface PaymentSelectorProps {
     userId: string;
     bookId: string;
     bookTitle: string;
     priceRub: number; // цена в рублях, например 299
-    priceUsd: number; // цена в долларах/евро для международных читателей, например 5
 }
 
 type PaymentMethod = "yookassa" | "stripe";
@@ -17,9 +17,9 @@ export default function PaymentSelector({
                                             bookId,
                                             bookTitle,
                                             priceRub,
-                                            priceUsd,
                                         }: PaymentSelectorProps) {
     const [method, setMethod] = useState<PaymentMethod>("yookassa");
+    const [currency, setCurrency] = useState<SupportedCurrency>("usd");
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
 
@@ -28,12 +28,13 @@ export default function PaymentSelector({
             try {
                 const res = await fetch("/api/detect-country");
                 const data = await res.json();
-                // Россия и Беларусь -> ЮКасса по умолчанию, остальные -> Stripe
+
                 const russianSpeakingRegion = ["RU", "BY"].includes(data.country);
                 setMethod(russianSpeakingRegion ? "yookassa" : "stripe");
+                setCurrency(detectCurrencyByCountry(data.country));
             } catch (err) {
                 console.error("Country detection failed:", err);
-                setMethod("yookassa"); // безопасный дефолт для вашей аудитории
+                setMethod("yookassa");
             } finally {
                 setLoading(false);
             }
@@ -60,14 +61,16 @@ export default function PaymentSelector({
                     alert("Ошибка при создании платежа. Попробуйте снова.");
                 }
             } else {
+                const price = getPriceForCurrency(currency);
+
                 const res = await fetch("/api/stripe/checkout", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         userId,
                         bookId,
-                        amount: Math.round(priceUsd * 100), // Stripe работает в центах
-                        currency: "usd",
+                        amount: Math.round(price * 100), // Stripe работает в минимальных единицах валюты
+                        currency,
                         bookTitle,
                     }),
                 });
@@ -91,6 +94,9 @@ export default function PaymentSelector({
         return <div>Определяем способ оплаты...</div>;
     }
 
+    const internationalPrice = getPriceForCurrency(currency);
+    const currencySymbol = currency === "usd" ? "$" : currency === "eur" ? "€" : "£";
+
     return (
         <div className="payment-selector">
             <div className="payment-method-toggle">
@@ -104,7 +110,7 @@ export default function PaymentSelector({
                     className={method === "stripe" ? "active" : ""}
                     onClick={() => setMethod("stripe")}
                 >
-                    Оплата зарубежной картой — ${priceUsd}
+                    Оплата зарубежной картой — {currencySymbol}{internationalPrice}
                 </button>
             </div>
 
