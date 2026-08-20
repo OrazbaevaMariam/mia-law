@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
                     : 0,
                 daysSelected: days,
             },
-            topChapters: topChapters?.data || [],
+            topChapters: topChapters || [],
             chartData,
             chapterStats: {
                 chapters: chapterStatsTable,
